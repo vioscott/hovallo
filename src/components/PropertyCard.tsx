@@ -1,12 +1,15 @@
 import { Link } from 'react-router-dom';
-import { BedIcon, BathIcon, SquareIcon } from 'lucide-react';
+import { BedIcon, BathIcon, SquareIcon, MapPinIcon } from 'lucide-react';
 import { StoredProperty } from '../utils/storage';
+import { FavoriteButton } from './FavoriteButton';
 
 interface PropertyCardProps {
   property: StoredProperty;
 }
 
 export function PropertyCard({ property }: PropertyCardProps) {
+  const pricePerSqft = property.sqft > 0 ? Math.round(property.price / property.sqft) : 0;
+
   return (
     <Link
       to={`/properties/${property.id}`}
@@ -27,6 +30,10 @@ export function PropertyCard({ property }: PropertyCardProps) {
         <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm text-gray-700 px-3 py-1 rounded-lg text-xs font-medium capitalize shadow-md">
           {property.type}
         </div>
+        {/* Favorite Button */}
+        <div className="absolute bottom-4 right-4" onClick={(e) => e.preventDefault()}>
+          <FavoriteButton propertyId={property.id} />
+        </div>
       </div>
 
       {/* Content */}
@@ -36,12 +43,16 @@ export function PropertyCard({ property }: PropertyCardProps) {
         </h3>
 
         <p className="text-sm text-gray-600 mb-3 flex items-center">
-          <svg className="w-4 h-4 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
+          <MapPinIcon className="w-4 h-4 mr-1.5 text-gray-400" />
           {property.city}, {property.state}
         </p>
+
+        {/* Price per sqft */}
+        {pricePerSqft > 0 && (
+          <p className="text-sm text-gray-500 mb-3">
+            ₦{pricePerSqft.toLocaleString()}/sqft
+          </p>
+        )}
 
         {/* Property Features */}
         <div className="flex items-center gap-3 sm:gap-4 text-sm text-gray-600 pt-3 border-t border-gray-100">

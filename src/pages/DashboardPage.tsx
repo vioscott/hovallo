@@ -131,12 +131,13 @@ export function DashboardPage() {
                                                     >
                                                         <BarChart3 className="w-4 h-4" />
                                                     </Link>
-                                                    <button
+                                                    <Link
+                                                        to={`/properties/${property.id}/edit`}
                                                         className="text-gray-400 hover:text-blue-600"
                                                         title="Edit"
                                                     >
                                                         <EditIcon className="w-4 h-4" />
-                                                    </button>
+                                                    </Link>
                                                     <button
                                                         onClick={() => handleDelete(property.id)}
                                                         className="text-gray-400 hover:text-red-600"

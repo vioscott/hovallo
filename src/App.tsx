@@ -14,6 +14,8 @@ import { AdminDashboardPage } from './pages/AdminDashboardPage';
 import { AboutPage } from './pages/AboutPage';
 import { PropertyAnalyticsPage } from './pages/PropertyAnalyticsPage';
 import { PortfolioAnalyticsPage } from './pages/PortfolioAnalyticsPage';
+import { FavoritesPage } from './pages/FavoritesPage';
+import { EditListingPage } from './pages/EditListingPage';
 
 export function App() {
   return (
@@ -55,6 +57,16 @@ export function App() {
             } />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/search" element={<HomePage />} />
+            <Route path="/favorites" element={
+              <ProtectedRoute allowedRoles={['tenant', 'landlord', 'agent', 'admin']}>
+                <FavoritesPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/properties/:id/edit" element={
+              <ProtectedRoute allowedRoles={['landlord', 'agent', 'admin']}>
+                <EditListingPage />
+              </ProtectedRoute>
+            } />
           </Routes>
           <Footer />
         </div>

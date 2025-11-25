@@ -183,7 +183,142 @@ export const storage = {
       isAdmin: u.role === 'admin',
       createdAt: u.created_at
     }));
+  },
+
+  // Favorites methods
+  addFavorite: async (userId: string, listingId: string) => {
+    const { error } = await supabase
+      .from('favorites')
+      .insert([{ user_id: userId, listing_id: listingId }]);
+
+    if (error) throw error;
+  },
+
+  removeFavorite: async (userId: string, listingId: string) => {
+    const { error } = await supabase
+      .from('favorites')
+      .delete()
+      .eq('user_id', userId)
+      .eq('listing_id', listingId);
+
+    if (error) throw error;
+  },
+
+  getUserFavorites: async (userId: string): Promise<StoredProperty[]> => {
+    const { data, error } = await supabase
+      .from('favorites')
+      .select('listing_id, properties(*)')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) return [];
+    return (data || [])
+      .map((fav: any) => fav.properties)
+      .filter(Boolean)
+      .map(mapPropertyFromDB);
+  },
+
+  isFavorite: async (userId: string, listingId: string): Promise<boolean> => {
+    const { data, error } = await supabase
+      .from('favorites')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('listing_id', listingId)
+      .single();
+
+    return !error && !!data;
+  },
+
+  // Browsing history methods
+  addBrowsingHistory: async (userId: string, listingId: string) => {
+    // Only add if user is logged in
+    if (!userId) return;
+
+    const { error } = await supabase
+      .from('browsing_history')
+      .insert([{ user_id: userId, listing_id: listingId }]);
+
+    if (error) console.error('Error adding browsing history:', error);
+  },
+
+  getBrowsingHistory: async (userId: string, limit: number = 10): Promise<StoredProperty[]> => {
+    const { data, error } = await supabase
+      .from('browsing_history')
+      .select('listing_id, properties(*)')
+      .eq('user_id', userId)
+      .order('viewed_at', { ascending: false })
+      .limit(limit);
+
+    if (error) return [];
+
+    // Remove duplicates (keep most recent)
+    const seen = new Set<string>();
+    return (data || [])
+      .map((history: any) => history.properties)
+      .filter(Boolean)
+      .filter((prop: any) => {
+        if (seen.has(prop.id)) return false;
+        seen.add(prop.id);
+        return true;
+      })
+      .map(mapPropertyFromDB);
+  },
+
+  // Property update method
+  updateProperty: async (id: string, updates: Partial<StoredProperty>) => {
+    const dbUpdates: any = {
+      updated_at: new Date().toISOString()
+    };
+
+    // Map camelCase to snake_case
+    if (updates.title !== undefined) dbUpdates.title = updates.title;
+    if (updates.type !== undefined) dbUpdates.type = updates.type;
+    if (updates.price !== undefined) dbUpdates.price = updates.price;
+    if (updates.currency !== undefined) dbUpdates.currency = updates.currency;
+    if (updates.address !== undefined) dbUpdates.address = updates.address;
+    if (updates.city !== undefined) dbUpdates.city = updates.city;
+    if (updates.state !== undefined) dbUpdates.state = updates.state;
+    if (updates.zip !== undefined) dbUpdates.zip = updates.zip;
+    if (updates.bedrooms !== undefined) dbUpdates.bedrooms = updates.bedrooms;
+    if (updates.bathrooms !== undefined) dbUpdates.bathrooms = updates.bathrooms;
+    if (updates.sqft !== undefined) dbUpdates.sqft = updates.sqft;
+    if (updates.description !== undefined) dbUpdates.description = updates.description;
+    if (updates.images !== undefined) dbUpdates.images = updates.images;
+    if (updates.status !== undefined) dbUpdates.status = updates.status;
+
+    const { error } = await supabase
+      .from('properties')
+      .update(dbUpdates)
+      .eq('id', id);
+
+    if (error) throw error;
+  },
+
+  // Get similar properties
+  getSimilarProperties: async (propertyId: string, limit: number = 4): Promise<StoredProperty[]> => {
+    // First get the current property
+    const property = await storage.getProperty(propertyId);
+    if (!property) return [];
+
+    // Find similar properties: same type, same city, similar price (±20%)
+    const minPrice = property.price * 0.8;
+    const maxPrice = property.price * 1.2;
+
+    const { data, error } = await supabase
+      .from('properties')
+      .select('*')
+      .eq('type', property.type)
+      .eq('city', property.city)
+      .eq('status', 'published')
+      .neq('id', propertyId)
+      .gte('price', minPrice)
+      .lte('price', maxPrice)
+      .limit(limit);
+
+    if (error) return [];
+    return (data || []).map(mapPropertyFromDB);
   }
+
 };
 
 // Helper to map DB snake_case to frontend camelCase

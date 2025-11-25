@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { SearchIcon, HomeIcon, MessageCircleIcon } from 'lucide-react';
+import { HomeIcon, MessageCircleIcon, SearchIcon } from 'lucide-react';
 import { PropertyCard } from '../components/PropertyCard';
+import { AdvancedFilters } from '../components/AdvancedFilters';
 import { storage, StoredProperty } from '../utils/storage';
 
 export function HomePage() {
@@ -11,6 +12,8 @@ export function HomePage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [propertyType, setPropertyType] = useState<string>('all');
   const [priceRange, setPriceRange] = useState<string>('all');
+  const [bedrooms, setBedrooms] = useState<string>('all');
+  const [bathrooms, setBathrooms] = useState<string>('all');
 
   useEffect(() => {
     const fetchProperties = async () => {
@@ -50,8 +53,20 @@ export function HomePage() {
       });
     }
 
+    // Bedrooms filter
+    if (bedrooms !== 'all') {
+      const minBedrooms = Number(bedrooms);
+      filtered = filtered.filter(p => p.bedrooms >= minBedrooms);
+    }
+
+    // Bathrooms filter
+    if (bathrooms !== 'all') {
+      const minBathrooms = Number(bathrooms);
+      filtered = filtered.filter(p => p.bathrooms >= minBathrooms);
+    }
+
     setFilteredProperties(filtered);
-  }, [searchTerm, propertyType, priceRange, properties]);
+  }, [searchTerm, propertyType, priceRange, bedrooms, bathrooms, properties]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
@@ -68,47 +83,19 @@ export function HomePage() {
           </div>
 
           {/* Search and Filters */}
-          <div className="bg-white rounded-xl shadow-2xl p-4 sm:p-6 max-w-4xl mx-auto">
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-              {/* Search Input */}
-              <div className="flex-1 relative">
-                <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="text"
-                  placeholder="Search by location or title..."
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 transition-all"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-
-              {/* Type Filter */}
-              <select
-                className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white transition-all"
-                value={propertyType}
-                onChange={(e) => setPropertyType(e.target.value)}
-              >
-                <option value="all">All Types</option>
-                <option value="apartment">Apartment</option>
-                <option value="house">House</option>
-                <option value="office">Office</option>
-                <option value="land">Land</option>
-              </select>
-
-              {/* Price Filter */}
-              <select
-                className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white transition-all"
-                value={priceRange}
-                onChange={(e) => setPriceRange(e.target.value)}
-              >
-                <option value="all">All Prices</option>
-                <option value="0-500000">Under ₦500k</option>
-                <option value="500000-1000000">₦500k - ₦1M</option>
-                <option value="1000000-5000000">₦1M - ₦5M</option>
-                <option value="5000000-10000000">₦5M - ₦10M</option>
-                <option value="10000000-999999999">₦10M+</option>
-              </select>
-            </div>
+          <div className="max-w-4xl mx-auto">
+            <AdvancedFilters
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              propertyType={propertyType}
+              onTypeChange={setPropertyType}
+              priceRange={priceRange}
+              onPriceRangeChange={setPriceRange}
+              bedrooms={bedrooms}
+              onBedroomsChange={setBedrooms}
+              bathrooms={bathrooms}
+              onBathroomsChange={setBathrooms}
+            />
           </div>
         </div>
       </div>

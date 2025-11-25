@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { HomeIcon, SearchIcon, PlusCircleIcon, UserIcon, LogOutIcon, LayoutDashboardIcon, ShieldIcon, MenuIcon, XIcon } from 'lucide-react';
+import { SearchIcon, PlusCircleIcon, UserIcon, LogOutIcon, LayoutDashboardIcon, ShieldIcon, MenuIcon, XIcon, Heart } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import logoBlue from '../imgs/logo-blue.png';
+
 export function Header() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -28,15 +30,15 @@ export function Header() {
       <div className="flex justify-between items-center h-16">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 text-xl font-semibold text-gray-900">
-          <HomeIcon className="w-6 h-6 text-blue-600" />
+          <img src={logoBlue} alt="Hovallo" className="h-16 w-auto" />
           <span className="hidden sm:inline">Hovallo</span>
         </Link>
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-6">
           <Link to="/" className={`flex items-center gap-2 text-sm font-medium transition-colors ${isActive('/') ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'}`}>
-            <HomeIcon className="w-4 h-4" />
-            Home
+            <SearchIcon className="w-4 h-4" />
+            Search
           </Link>
           <Link to="/properties" className={`flex items-center gap-2 text-sm font-medium transition-colors ${isActive('/properties') ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'}`}>
             <SearchIcon className="w-4 h-4" />
@@ -70,6 +72,11 @@ export function Header() {
                   <Link to="/dashboard" onClick={() => setShowUserMenu(false)} className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                     <LayoutDashboardIcon className="w-4 h-4" />
                     My Dashboard
+                  </Link>
+
+                  <Link to="/favorites" onClick={() => setShowUserMenu(false)} className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                    <Heart className="w-4 h-4" />
+                    My Favorites
                   </Link>
 
                   {isAdmin && <Link to="/admin" onClick={() => setShowUserMenu(false)} className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
@@ -109,8 +116,8 @@ export function Header() {
         <div className="fixed top-16 left-0 right-0 bg-white border-b border-gray-200 shadow-lg z-50 md:hidden">
           <nav className="px-4 py-4 space-y-1">
             <Link to="/" onClick={closeMobileMenu} className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-colors ${isActive('/') ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50'}`}>
-              <HomeIcon className="w-5 h-5" />
-              Home
+              <SearchIcon className="w-5 h-5" />
+              Search
             </Link>
 
             <Link to="/properties" onClick={closeMobileMenu} className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-colors ${isActive('/properties') ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50'}`}>
@@ -144,6 +151,11 @@ export function Header() {
                 <Link to="/dashboard" onClick={closeMobileMenu} className="flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:bg-gray-50 transition-colors">
                   <LayoutDashboardIcon className="w-5 h-5" />
                   My Dashboard
+                </Link>
+
+                <Link to="/favorites" onClick={closeMobileMenu} className="flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                  <Heart className="w-5 h-5" />
+                  My Favorites
                 </Link>
 
                 {isAdmin && <Link to="/admin" onClick={closeMobileMenu} className="flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:bg-gray-50 transition-colors">

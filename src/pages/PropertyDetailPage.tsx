@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { BedIcon, BathIcon, SquareIcon, MapPinIcon, ArrowLeftIcon, TrashIcon } from 'lucide-react';
 import { ContactModal } from '../components/ContactModal';
+import { FavoriteButton } from '../components/FavoriteButton';
+import { MortgageCalculator } from '../components/MortgageCalculator';
+import { SimilarProperties } from '../components/SimilarProperties';
 import { storage, StoredProperty } from '../utils/storage';
 import { trackPropertyView } from '../utils/analytics';
 import { useAuth } from '../contexts/AuthContext';
@@ -29,6 +32,11 @@ export function PropertyDetailPage() {
           city: foundProperty.city,
           state: foundProperty.state
         });
+
+        // Track browsing history if user is logged in
+        if (user) {
+          storage.addBrowsingHistory(user.id, id);
+        }
       }
     }
   }, [id, user]);
@@ -59,10 +67,13 @@ export function PropertyDetailPage() {
           Back to properties
         </Link>
 
-        {isOwner && <button onClick={handleDelete} className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-          <TrashIcon className="w-4 h-4" />
-          Delete Property
-        </button>}
+        <div className="flex items-center gap-3">
+          <FavoriteButton propertyId={property.id} className="shadow-md" />
+          {isOwner && <button onClick={handleDelete} className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+            <TrashIcon className="w-4 h-4" />
+            Delete Property
+          </button>}
+        </div>
       </div>
 
       <div className="bg-white rounded-xl overflow-hidden border border-gray-200">
@@ -89,9 +100,14 @@ export function PropertyDetailPage() {
             </div>
             <div className="text-right">
               <div className="text-3xl font-bold text-blue-600 mb-1">
-                ${property.price.toLocaleString()}
+                ₦{property.price.toLocaleString()}
               </div>
               <div className="text-gray-600">per month</div>
+              {property.sqft > 0 && (
+                <div className="text-sm text-gray-500 mt-1">
+                  ₦{Math.round(property.price / property.sqft).toLocaleString()}/sqft
+                </div>
+              )}
             </div>
           </div>
 
@@ -151,8 +167,14 @@ export function PropertyDetailPage() {
           {!isOwner && <button onClick={() => setIsContactModalOpen(true)} className="w-full bg-blue-600 text-white py-4 rounded-lg font-medium text-lg hover:bg-blue-700 transition-colors">
             Contact Owner
           </button>}
+
+          {/* Mortgage Calculator */}
+          <MortgageCalculator propertyPrice={property.price} className="mt-6" />
         </div>
       </div>
+
+      {/* Similar Properties */}
+      <SimilarProperties propertyId={property.id} className="mt-8" />
     </div>
 
     <ContactModal isOpen={isContactModalOpen} onClose={() => setIsContactModalOpen(false)} propertyTitle={property.title} contactName={property.contactName} contactEmail={property.contactEmail} contactPhone={property.contactPhone} />
