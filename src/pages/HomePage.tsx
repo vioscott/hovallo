@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { HomeIcon, MessageCircleIcon, SearchIcon } from 'lucide-react';
+import { HomeIcon, MessageCircleIcon, SearchIcon, MapPinIcon, Loader2 } from 'lucide-react';
 import { PropertyCard } from '../components/PropertyCard';
 import { storage, StoredProperty } from '../utils/storage';
 import heroImage from '../imgs/Luxury-Real-Estate-Brands.jpg';
@@ -10,6 +10,9 @@ export function HomePage() {
   const [properties, setProperties] = useState<StoredProperty[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [locationLoading, setLocationLoading] = useState(false);
+  const [locationError, setLocationError] = useState('');
+  const [searchFocused, setSearchFocused] = useState(false);
 
   useEffect(() => {
     const fetchProperties = async () => {
@@ -31,11 +34,75 @@ export function HomePage() {
     }
   };
 
+  const handleUseCurrentLocation = () => {
+    setLocationError('');
+    setLocationLoading(true);
+
+    if (!navigator.geolocation) {
+      setLocationError('Geolocation is not supported by your browser');
+      setLocationLoading(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+
+        try {
+          // Use Nominatim (OpenStreetMap) for reverse geocoding
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=14&addressdetails=1`,
+            {
+              headers: {
+                'User-Agent': 'Hovallo Property App'
+              }
+            }
+          );
+
+          const data = await response.json();
+
+          // Extract neighborhood, suburb, or city
+          const location = data.address.suburb ||
+            data.address.neighbourhood ||
+            data.address.city ||
+            data.address.town ||
+            data.address.village ||
+            'Current location';
+
+          setSearchTerm(location);
+          setLocationLoading(false);
+          setSearchFocused(false);
+        } catch (error) {
+          console.error('Geocoding error:', error);
+          setLocationError('Unable to determine location name');
+          setLocationLoading(false);
+        }
+      },
+      (error) => {
+        console.error('Geolocation error:', error);
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            setLocationError('Location permission denied. Please enable location access.');
+            break;
+          case error.POSITION_UNAVAILABLE:
+            setLocationError('Location information unavailable.');
+            break;
+          case error.TIMEOUT:
+            setLocationError('Location request timed out.');
+            break;
+          default:
+            setLocationError('An unknown error occurred.');
+        }
+        setLocationLoading(false);
+      }
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Hero Section */}
       <div
-        className="relative bg-cover bg-center text-white py-20 sm:py-24 md:py-32"
+        className="relative bg-cover bg-center text-white py-20 sm:py-24 md:py-32 -mt-20 pt-32 md:mt-0 md:pt-20"
         style={{ backgroundImage: `url(${heroImage})` }}
       >
         <div className="absolute inset-0 bg-black bg-opacity-60"></div>
@@ -49,24 +116,58 @@ export function HomePage() {
             </p>
           </div>
 
-          {/* Simple Search Bar */}
-          <div className="max-w-3xl mx-auto">
+          {/* Search Bar with Dropdown */}
+          <div className="max-w-3xl mx-auto relative">
             <form onSubmit={handleSearch} className="relative">
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                onFocus={() => setSearchFocused(true)}
+                onBlur={() => setTimeout(() => setSearchFocused(false), 200)}
                 placeholder="Enter an address, zip code or neighborhood"
                 className="w-full px-6 py-4 pr-16 rounded-lg text-gray-900 placeholder-gray-500 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg"
               />
               <button
                 type="submit"
-                className="absolute right-2 top-2 bottom-2 bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 transition-colors"
+                className="absolute right-2 top-2 bottom-2 p-3 rounded-md hover:bg-blue-50 transition-colors group"
                 aria-label="Search"
               >
-                <SearchIcon className="w-6 h-6" />
+                <SearchIcon className="w-6 h-6 text-blue-600 group-hover:text-blue-700" />
               </button>
             </form>
+
+            {/* Dropdown with Current Location */}
+            {searchFocused && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-20">
+                <button
+                  onClick={handleUseCurrentLocation}
+                  disabled={locationLoading}
+                  className="w-full flex items-center gap-3 px-6 py-4 hover:bg-blue-50 transition-colors disabled:opacity-50 text-left"
+                >
+                  {locationLoading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 text-blue-600 animate-spin flex-shrink-0" />
+                      <span className="text-gray-700">Getting location...</span>
+                    </>
+                  ) : (
+                    <>
+                      <MapPinIcon className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                      <div>
+                        <div className="text-gray-900 font-medium">Use current location</div>
+                        <div className="text-sm text-gray-500">Auto-detect your neighborhood</div>
+                      </div>
+                    </>
+                  )}
+                </button>
+
+                {locationError && (
+                  <div className="px-6 py-3 bg-red-50 border-t border-red-100 text-sm text-red-700">
+                    {locationError}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>

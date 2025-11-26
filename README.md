@@ -4,17 +4,17 @@ A modern property rental platform for Nigeria, connecting landlords, agents, and
 
 ## Features
 
-- 🏠 Property listings with advanced search and filtering
-- 👤 User authentication with role-based access (Tenant, Landlord, Agent, Admin)
-- 📊 **Advanced Analytics Dashboard** for landlords
+- Property listings with advanced search and filtering
+- User authentication with role-based access (Tenant, Landlord, Agent, Admin)
+- **Advanced Analytics Dashboard** for landlords
   - Property view tracking
   - Inquiry conversion rates
   - Price comparison with similar properties
   - Best time to list analysis
   - Geographic demand heatmaps
-- 📝 Property inquiry system
-- 🔐 Admin moderation panel
-- 📱 Responsive design for all devices
+- Property inquiry system
+- Admin moderation panel
+- Responsive design for all devices
 
 ## Tech Stack
 

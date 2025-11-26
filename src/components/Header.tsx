@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { UserIcon, LogOutIcon, LayoutDashboardIcon, ShieldIcon, MenuIcon, XIcon, Heart } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import logoBlue from '../imgs/logo-blue.png';
+import logoWhite from '../imgs/logo-white.png';
 
 import { NavigationMenu } from './NavigationMenu';
 
@@ -116,17 +117,29 @@ export function Header() {
     }
   ];
 
+  const isHomePage = location.pathname === '/';
+
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-50 font-sans">
+    <header className={`border-b sticky top-0 z-50 font-sans ${isHomePage ? 'bg-transparent border-transparent md:bg-white md:border-gray-200' : 'bg-white border-gray-200'
+      }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
 
           {/* Logo (Left) */}
           <div className="flex-shrink-0 flex items-center">
             <Link to="/" className="flex items-center gap-2">
-              <img src={logoBlue} alt="Hovallo" className="h-8 w-auto" />
-              {/* Zillow doesn't usually show text next to logo on main header if logo is distinct, but we keep it for brand identity if needed. User said "replace home icon with logo". */}
-              <span className="hidden lg:inline text-xl font-bold text-blue-900 tracking-tight">Hovallo</span>
+              <img
+                src={isHomePage ? logoWhite : logoBlue}
+                alt="Hovallo"
+                className={`h-8 w-auto ${isHomePage ? 'md:hidden' : ''}`}
+              />
+              <img
+                src={logoBlue}
+                alt="Hovallo"
+                className={`h-8 w-auto ${isHomePage ? 'hidden md:block' : 'hidden'}`}
+              />
+              <span className={`hidden lg:inline text-xl font-bold tracking-tight ${isHomePage ? 'text-white md:text-blue-900' : 'text-blue-900'
+                }`}>Hovallo</span>
             </Link>
           </div>
 
@@ -195,7 +208,12 @@ export function Header() {
 
           {/* Mobile Menu Button (Right) */}
           <div className="flex items-center md:hidden">
-            <button onClick={() => setShowMobileMenu(!showMobileMenu)} className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Toggle menu">
+            <button
+              onClick={() => setShowMobileMenu(!showMobileMenu)}
+              className={`p-2 hover:bg-gray-100 rounded-lg transition-colors ${isHomePage ? 'text-white hover:bg-white/20' : 'text-gray-600 hover:text-gray-900'
+                }`}
+              aria-label="Toggle menu"
+            >
               {showMobileMenu ? <XIcon className="w-6 h-6" /> : <MenuIcon className="w-6 h-6" />}
             </button>
           </div>

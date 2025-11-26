@@ -18,10 +18,12 @@ import { PortfolioAnalyticsPage } from './pages/PortfolioAnalyticsPage';
 import { FavoritesPage } from './pages/FavoritesPage';
 import { EditListingPage } from './pages/EditListingPage';
 import { MortgagePage } from './pages/MortgagePage';
+import { SupabaseTestPage } from './pages/SupabaseTestPage';
+
 
 export function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_relativeSplatPath: true }}>
       <AuthProvider>
         <div className="min-h-screen bg-gray-50">
           <Header />
@@ -75,6 +77,7 @@ export function App() {
                 <EditListingPage />
               </ProtectedRoute>
             } />
+            <Route path="/test-supabase" element={<SupabaseTestPage />} />
           </Routes>
           <Footer />
         </div>
