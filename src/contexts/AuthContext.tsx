@@ -121,6 +121,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           { id: data.user.id, email, name, role, created_at: new Date().toISOString() },
         ]);
         if (profileError) console.error('Error creating user profile:', profileError);
+
+        // Optimistically set user to avoid race condition with redirect
+        setUser({
+          id: data.user.id,
+          email,
+          name,
+          role,
+          isAdmin: false
+        });
       }
       return { success: true };
     } catch (e: any) {

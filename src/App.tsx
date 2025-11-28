@@ -42,18 +42,14 @@ export function App() {
             <Route path="/signup/professional" element={<ProfessionalSignupPage />} />
             <Route path="/auth/callback" element={<AuthCallbackPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-            <Route path="/post" element={
-              <ProtectedRoute allowedRoles={['landlord', 'agent', 'admin']}>
-                <CreateListingPage />
-              </ProtectedRoute>
-            } />
+
             <Route path="/create-listing" element={
-              <ProtectedRoute allowedRoles={['landlord', 'agent', 'admin']}>
+              <ProtectedRoute allowedRoles={['tenant', 'landlord', 'agent', 'admin']}>
                 <CreateListingPage />
               </ProtectedRoute>
             } />
             <Route path="/dashboard" element={
-              <ProtectedRoute allowedRoles={['landlord', 'agent', 'admin']}>
+              <ProtectedRoute allowedRoles={['tenant', 'landlord', 'agent', 'admin']}>
                 <DashboardPage />
               </ProtectedRoute>
             } />
@@ -63,12 +59,12 @@ export function App() {
               </ProtectedRoute>
             } />
             <Route path="/dashboard/analytics" element={
-              <ProtectedRoute allowedRoles={['landlord', 'agent', 'admin']}>
+              <ProtectedRoute allowedRoles={['tenant', 'landlord', 'agent', 'admin']}>
                 <PortfolioAnalyticsPage />
               </ProtectedRoute>
             } />
             <Route path="/dashboard/properties/:id/analytics" element={
-              <ProtectedRoute allowedRoles={['landlord', 'agent', 'admin']}>
+              <ProtectedRoute allowedRoles={['tenant', 'landlord', 'agent', 'admin']}>
                 <PropertyAnalyticsPage />
               </ProtectedRoute>
             } />
@@ -80,6 +76,11 @@ export function App() {
             <Route path="/favorites" element={
               <ProtectedRoute allowedRoles={['tenant', 'landlord', 'agent', 'admin']}>
                 <FavoritesPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/post" element={
+              <ProtectedRoute allowedRoles={['tenant', 'landlord', 'agent', 'admin']}>
+                <CreateListingPage />
               </ProtectedRoute>
             } />
             <Route path="/properties/:id/edit" element={
