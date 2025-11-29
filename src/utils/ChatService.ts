@@ -7,6 +7,10 @@ export interface Message {
     sender_id: string;
     content: string;
     read: boolean;
+    read_at?: string;
+    attachment_url?: string;
+    attachment_type?: 'image' | 'document';
+    attachment_name?: string;
     created_at: string;
 }
 
@@ -15,6 +19,7 @@ export interface Conversation {
     participant1_id: string;
     participant2_id: string;
     property_id?: string;
+    archived?: boolean;
     updated_at: string;
     created_at: string;
     other_user?: {
@@ -27,16 +32,22 @@ export interface Conversation {
 
 export const ChatService = {
     // Get all conversations for the current user
-    async getConversations(userId: string): Promise<Conversation[]> {
-        const { data: conversations, error } = await supabase
+    async getConversations(userId: string, includeArchived: boolean = false): Promise<Conversation[]> {
+        let query = supabase
             .from('conversations')
             .select(`
         *,
         participant1:participant1_id(id, name, avatar_url),
         participant2:participant2_id(id, name, avatar_url)
       `)
-            .or(`participant1_id.eq.${userId},participant2_id.eq.${userId}`)
-            .order('updated_at', { ascending: false });
+            .or(`participant1_id.eq.${userId},participant2_id.eq.${userId}`);
+
+        // Filter archived conversations unless explicitly requested
+        if (!includeArchived) {
+            query = query.or('archived.is.null,archived.eq.false');
+        }
+
+        const { data: conversations, error } = await query.order('updated_at', { ascending: false });
 
         if (error) throw error;
 
@@ -76,14 +87,28 @@ export const ChatService = {
     },
 
     // Send a new message
-    async sendMessage(conversationId: string, senderId: string, content: string): Promise<Message> {
+    async sendMessage(
+        conversationId: string,
+        senderId: string,
+        content: string,
+        attachment?: { url: string; type: 'image' | 'document'; name: string }
+    ): Promise<Message> {
+        const messageData: any = {
+            conversation_id: conversationId,
+            sender_id: senderId,
+            content
+        };
+
+        // Add attachment if provided
+        if (attachment) {
+            messageData.attachment_url = attachment.url;
+            messageData.attachment_type = attachment.type;
+            messageData.attachment_name = attachment.name;
+        }
+
         const { data, error } = await supabase
             .from('messages')
-            .insert({
-                conversation_id: conversationId,
-                sender_id: senderId,
-                content
-            })
+            .insert(messageData)
             .select()
             .single();
 
@@ -145,16 +170,37 @@ export const ChatService = {
             .subscribe();
     },
 
-    // Mark messages as read
+    // Mark messages as read with timestamp
     async markAsRead(conversationId: string, userId: string) {
-        // Mark all messages in this conversation sent by the OTHER user as read
-        // We need to find messages where sender_id != userId AND read = false
         const { error } = await supabase
             .from('messages')
-            .update({ read: true })
+            .update({
+                read: true,
+                read_at: new Date().toISOString()
+            })
             .eq('conversation_id', conversationId)
             .neq('sender_id', userId)
             .eq('read', false);
+
+        if (error) throw error;
+    },
+
+    // Archive a conversation
+    async archiveConversation(conversationId: string): Promise<void> {
+        const { error } = await supabase
+            .from('conversations')
+            .update({ archived: true })
+            .eq('id', conversationId);
+
+        if (error) throw error;
+    },
+
+    // Unarchive a conversation
+    async unarchiveConversation(conversationId: string): Promise<void> {
+        const { error } = await supabase
+            .from('conversations')
+            .update({ archived: false })
+            .eq('id', conversationId);
 
         if (error) throw error;
     }

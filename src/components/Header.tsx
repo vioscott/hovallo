@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { UserIcon, LogOutIcon, LayoutDashboardIcon, ShieldIcon, MenuIcon, XIcon, Heart, MessageSquare } from 'lucide-react';
+import { UserIcon, LogOutIcon, LayoutDashboardIcon, ShieldIcon, MenuIcon, XIcon, Heart, MessageSquare, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import logoBlue from '../imgs/logo-blue.png';
 import logoWhite from '../imgs/logo-white.png';
@@ -18,6 +18,7 @@ export function Header() {
   } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [showMoreLinks, setShowMoreLinks] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -246,32 +247,21 @@ export function Header() {
                 </button>
               </div>
               <nav className="px-4 py-4 space-y-1">
-                <Link to="/properties" onClick={closeMobileMenu} className="block px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg">Buy</Link>
-                <Link to="/properties" onClick={closeMobileMenu} className="block px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg">Rent</Link>
-                <Link to="/post" onClick={closeMobileMenu} className="block px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg">Sell</Link>
-                <Link to="/mortgage" onClick={closeMobileMenu} className="block px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg">Home Loans</Link>
-                <Link to="/agents" onClick={closeMobileMenu} className="block px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg">Agent Finder</Link>
-
-                <div className="border-t border-gray-200 my-2 pt-2"></div>
-
-                <Link to="/dashboard" onClick={closeMobileMenu} className="block px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg">Manage Rentals</Link>
-                <Link to="/faq" onClick={closeMobileMenu} className="block px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg">Help</Link>
-
-                <div className="border-t border-gray-200 my-2 pt-2"></div>
-
                 {isAuthenticated ? (
                   <>
-                    <div className="px-4 py-2">
+                    {/* User Info */}
+                    <div className="px-4 py-2 mb-2">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
                           {user?.name.charAt(0).toUpperCase()}
                         </div>
                         <div>
                           <p className="text-sm font-medium text-gray-900">{user?.name}</p>
-                          <p className="text-xs text-gray-500">{user?.email}</p>
                         </div>
                       </div>
                     </div>
+
+                    {/* Primary Links */}
                     <Link to="/dashboard" onClick={closeMobileMenu} className="flex items-center gap-3 px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg">
                       <LayoutDashboardIcon className="w-5 h-5" />
                       My Dashboard
@@ -284,13 +274,52 @@ export function Header() {
                       <Heart className="w-5 h-5" />
                       My Favorites
                     </Link>
-                    <button onClick={handleLogout} className="flex items-center gap-3 w-full px-4 py-3 text-base font-medium text-red-600 hover:bg-red-50 rounded-lg mt-2">
+                    <button onClick={handleLogout} className="flex items-center gap-3 w-full px-4 py-3 text-base font-medium text-red-600 hover:bg-red-50 rounded-lg">
                       <LogOutIcon className="w-5 h-5" />
                       Sign Out
                     </button>
+
+                    <div className="border-t border-gray-200 my-2 pt-2"></div>
+
+                    {/* Show More Toggle */}
+                    <button
+                      onClick={() => setShowMoreLinks(!showMoreLinks)}
+                      className="flex items-center justify-between w-full px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg"
+                    >
+                      <span>Show More</span>
+                      {showMoreLinks ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                    </button>
+
+                    {/* Additional Links (Collapsible) */}
+                    {showMoreLinks && (
+                      <div className="space-y-1">
+                        <Link to="/properties" onClick={closeMobileMenu} className="block px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg">Buy</Link>
+                        <Link to="/properties" onClick={closeMobileMenu} className="block px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg">Rent</Link>
+                        <Link to="/post" onClick={closeMobileMenu} className="block px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg">Sell</Link>
+                        <Link to="/mortgage" onClick={closeMobileMenu} className="block px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg">Home Loans</Link>
+                        <Link to="/agents" onClick={closeMobileMenu} className="block px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg">Agent Finder</Link>
+                        <Link to="/dashboard" onClick={closeMobileMenu} className="block px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg">Manage Rentals</Link>
+                        <Link to="/faq" onClick={closeMobileMenu} className="block px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg">Help</Link>
+                      </div>
+                    )}
                   </>
                 ) : (
-                  <Link to="/login" onClick={closeMobileMenu} className="block px-4 py-3 text-base font-medium text-blue-600 hover:bg-blue-50 rounded-lg">Sign In</Link>
+                  <>
+                    <Link to="/properties" onClick={closeMobileMenu} className="block px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg">Buy</Link>
+                    <Link to="/properties" onClick={closeMobileMenu} className="block px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg">Rent</Link>
+                    <Link to="/post" onClick={closeMobileMenu} className="block px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg">Sell</Link>
+                    <Link to="/mortgage" onClick={closeMobileMenu} className="block px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg">Home Loans</Link>
+                    <Link to="/agents" onClick={closeMobileMenu} className="block px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg">Agent Finder</Link>
+
+                    <div className="border-t border-gray-200 my-2 pt-2"></div>
+
+                    <Link to="/dashboard" onClick={closeMobileMenu} className="block px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg">Manage Rentals</Link>
+                    <Link to="/faq" onClick={closeMobileMenu} className="block px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg">Help</Link>
+
+                    <div className="border-t border-gray-200 my-2 pt-2"></div>
+
+                    <Link to="/login" onClick={closeMobileMenu} className="block px-4 py-3 text-base font-medium text-blue-600 hover:bg-blue-50 rounded-lg">Sign In</Link>
+                  </>
                 )}
               </nav>
             </div>
