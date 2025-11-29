@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { GoogleOAuthButton } from '../components/GoogleOAuthButton';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -58,7 +58,7 @@ const professionalOptions: ProfessionalOption[] = [
 
 export function ProfessionalSignupPage() {
     const navigate = useNavigate();
-    const { signup } = useAuth();
+    const { signup, isAuthenticated } = useAuth();
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -70,6 +70,13 @@ export function ProfessionalSignupPage() {
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+
+    // Redirect if already logged in
+    useEffect(() => {
+        if (isAuthenticated) {
+            navigate('/dashboard');
+        }
+    }, [isAuthenticated, navigate]);
 
     // Password validation rules
     const validatePassword = (password: string) => {

@@ -270,6 +270,10 @@ export function Header() {
                       <MessageSquare className="w-5 h-5" />
                       Messages
                     </Link>
+                    <Link to="/profile" onClick={closeMobileMenu} className="flex items-center gap-3 px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg">
+                      <UserIcon className="w-5 h-5" />
+                      Profile Settings
+                    </Link>
                     <Link to="/favorites" onClick={closeMobileMenu} className="flex items-center gap-3 px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg">
                       <Heart className="w-5 h-5" />
                       My Favorites
@@ -286,7 +290,7 @@ export function Header() {
                       onClick={() => setShowMoreLinks(!showMoreLinks)}
                       className="flex items-center justify-between w-full px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg"
                     >
-                      <span>Show More</span>
+                      <span>{showMoreLinks ? 'Show Less' : 'Show More'}</span>
                       {showMoreLinks ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                     </button>
 
