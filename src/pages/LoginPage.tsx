@@ -8,7 +8,8 @@ export function LoginPage() {
   const navigate = useNavigate();
   const {
     login,
-    isAuthenticated
+    isAuthenticated,
+    user
   } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -17,10 +18,15 @@ export function LoginPage() {
 
   // Redirect if already logged in
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/dashboard');
+    if (isAuthenticated && user) {
+      // Redirect admins to admin dashboard
+      if (user.isAdmin) {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
+      }
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,7 +36,8 @@ export function LoginPage() {
     const result = await login(email, password);
 
     if (result.success) {
-      navigate('/dashboard');
+      // The useEffect will handle the redirect based on user role
+      // No need to navigate here as it will be handled by the effect
     } else {
       setError(result.error || 'Login failed. Please check your credentials.');
     }

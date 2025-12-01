@@ -16,6 +16,8 @@ export function ListingDetailPage() {
     // Contact Form State
     const [message, setMessage] = useState('');
     const [inquirySent, setInquirySent] = useState(false);
+    const [isSaved, setIsSaved] = useState(false);
+    const [saving, setSaving] = useState(false);
 
     useEffect(() => {
         const fetchProperty = async () => {
@@ -34,6 +36,16 @@ export function ListingDetailPage() {
         fetchProperty();
     }, [id]);
 
+    useEffect(() => {
+        const checkFavorite = async () => {
+            if (user && property) {
+                const saved = await storage.isFavorite(user.id, property.id);
+                setIsSaved(saved);
+            }
+        };
+        checkFavorite();
+    }, [user, property]);
+
     const navigate = useNavigate();
 
     const handleMessageHost = async () => {
@@ -43,12 +55,54 @@ export function ListingDetailPage() {
             // Create conversation with property owner
             const conversationId = await ChatService.createConversation(user.id, property.userId, property.id);
 
-            // Navigate to messages page with this conversation selected (logic to be handled in MessagesPage or via URL param if we added that)
-            // For now, just go to messages page, user will see the new conversation at top
-            navigate('/messages');
+            // Navigate to messages page with this conversation selected
+            navigate('/messages', { state: { conversationId } });
         } catch (error) {
             console.error('Error starting conversation:', error);
             alert('Failed to start conversation. Please try again.');
+        }
+    };
+
+    const handleSave = async () => {
+        if (!user) {
+            navigate('/login');
+            return;
+        }
+        if (!property) return;
+
+        setSaving(true);
+        try {
+            if (isSaved) {
+                await storage.removeFavorite(user.id, property.id);
+                setIsSaved(false);
+            } else {
+                await storage.addFavorite(user.id, property.id);
+                setIsSaved(true);
+            }
+        } catch (error) {
+            console.error('Error toggling favorite:', error);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleShare = async () => {
+        if (!property) return;
+
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: property.title,
+                    text: `Check out this property: ${property.title}`,
+                    url: window.location.href,
+                });
+            } catch (error) {
+                console.log('Error sharing:', error);
+            }
+        } else {
+            // Fallback to clipboard
+            navigator.clipboard.writeText(window.location.href);
+            alert('Link copied to clipboard!');
         }
     };
 
@@ -145,7 +199,12 @@ export function ListingDetailPage() {
                     <div className="space-y-6">
                         {/* Contact Card */}
                         <div className="bg-white rounded-xl p-6 shadow-sm sticky top-6">
-                            <h3 className="text-lg font-semibold mb-4">Contact Landlord</h3>
+                            <h3 className="text-lg font-semibold mb-2">
+                                Contact {property.listerRole === 'agent' ? 'Agent' : 'Landlord'}
+                            </h3>
+                            {property.listerName && (
+                                <p className="text-gray-600 mb-4">Listed by <span className="font-medium text-gray-900">{property.listerName}</span></p>
+                            )}
 
 
                             {inquirySent ? (
@@ -166,7 +225,7 @@ export function ListingDetailPage() {
                                         className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                     >
                                         <MessageSquare className="w-5 h-5" />
-                                        Message Host
+                                        Message {property.listerRole === 'agent' ? 'Agent' : 'Host'}
                                     </button>
 
                                     <p className="text-xs text-center text-gray-500">
@@ -176,11 +235,21 @@ export function ListingDetailPage() {
                             )}
 
                             <div className="mt-6 pt-6 border-t border-gray-100">
-                                <button className="w-full flex items-center justify-center gap-2 text-gray-600 hover:text-gray-900 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors mb-3">
-                                    <HeartIcon className="w-4 h-4" />
-                                    Save Property
+                                <button
+                                    onClick={handleSave}
+                                    disabled={saving}
+                                    className={`w-full flex items-center justify-center gap-2 py-2 border rounded-lg transition-colors mb-3 ${isSaved
+                                        ? 'bg-red-50 text-red-600 border-red-100 hover:bg-red-100'
+                                        : 'text-gray-600 hover:text-gray-900 border-gray-200 hover:bg-gray-50'
+                                        }`}
+                                >
+                                    <HeartIcon className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`} />
+                                    {isSaved ? 'Saved' : 'Save Property'}
                                 </button>
-                                <button className="w-full flex items-center justify-center gap-2 text-gray-600 hover:text-gray-900 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                                <button
+                                    onClick={handleShare}
+                                    className="w-full flex items-center justify-center gap-2 text-gray-600 hover:text-gray-900 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                                >
                                     <ShareIcon className="w-4 h-4" />
                                     Share Listing
                                 </button>

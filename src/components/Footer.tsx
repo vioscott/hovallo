@@ -2,8 +2,27 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { FacebookIcon, TwitterIcon, InstagramIcon, LinkedinIcon, MailIcon, PhoneIcon, MapPinIcon } from 'lucide-react';
 import logoBlue from '../imgs/logo-blue.png';
+import { storage } from '../utils/storage';
 
 export function Footer() {
+    const [email, setEmail] = React.useState('');
+    const [status, setStatus] = React.useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+
+    const handleSubscribe = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!email) return;
+
+        setStatus('loading');
+        try {
+            await storage.addNewsletterSubscriber(email);
+            setStatus('success');
+            setEmail('');
+        } catch (error) {
+            console.error('Newsletter error:', error);
+            setStatus('error');
+        }
+    };
+
     return (
         <footer className="bg-gray-900 text-gray-300">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -60,18 +79,26 @@ export function Footer() {
                     <div>
                         <h3 className="text-lg font-semibold text-white mb-4">Newsletter</h3>
                         <p className="text-sm text-gray-400 mb-4">Subscribe to get the latest property updates and news.</p>
-                        <form className="space-y-2" onSubmit={(e) => e.preventDefault()}>
+                        <form className="space-y-2" onSubmit={handleSubscribe}>
                             <input
                                 type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                                 placeholder="Enter your email"
                                 className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-500"
+                                disabled={status === 'loading' || status === 'success'}
                             />
                             <button
                                 type="submit"
-                                className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                                disabled={status === 'loading' || status === 'success'}
+                                className={`w-full px-4 py-2 rounded-lg font-medium transition-colors ${status === 'success'
+                                    ? 'bg-green-600 hover:bg-green-700 text-white'
+                                    : 'bg-blue-600 hover:bg-blue-700 text-white'
+                                    }`}
                             >
-                                Subscribe
+                                {status === 'loading' ? 'Subscribing...' : status === 'success' ? 'Subscribed!' : 'Subscribe'}
                             </button>
+                            {status === 'error' && <p className="text-red-400 text-xs">Failed to subscribe. Please try again.</p>}
                         </form>
                     </div>
                 </div>

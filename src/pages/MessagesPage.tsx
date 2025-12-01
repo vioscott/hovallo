@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { ChatService, Conversation, Message } from '../utils/ChatService';
 import { Send, User as UserIcon, MessageSquare, ArrowLeft, Paperclip, Check, CheckCheck, X } from 'lucide-react';
@@ -20,10 +21,23 @@ export function MessagesPage() {
     const subscriptionRef = useRef<any>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    const location = useLocation();
+    const state = location.state as { conversationId?: string } | null;
+
     // Fetch conversations on mount
     useEffect(() => {
         if (user) {
-            loadConversations();
+            loadConversations().then((convs) => {
+                // If we have a conversationId in state, select it
+                if (state?.conversationId && convs) {
+                    const targetConv = convs.find(c => c.id === state.conversationId);
+                    if (targetConv) {
+                        setSelectedConversation(targetConv);
+                        // Clear state so it doesn't persist on refresh/navigation if we wanted to (optional)
+                        window.history.replaceState({}, document.title);
+                    }
+                }
+            });
         }
     }, [user]);
 
@@ -58,25 +72,46 @@ export function MessagesPage() {
         }
     }, [selectedConversation]);
 
-    const loadConversations = async () => {
+    // Poll for updates every 5 seconds
+    useEffect(() => {
         if (!user) return;
+
+        const interval = setInterval(() => {
+            if (selectedConversation) {
+                // Poll current conversation without forcing scroll
+                loadMessages(selectedConversation.id, 0, false);
+            } else {
+                // Poll conversations list if no chat selected
+                loadConversations();
+            }
+        }, 5000);
+
+        return () => clearInterval(interval);
+    }, [user, selectedConversation]);
+
+    const loadConversations = async () => {
+        if (!user) return [];
         try {
             const data = await ChatService.getConversations(user.id, true);
             setConversations(data);
+            return data;
         } catch (error) {
             console.error('Error loading conversations:', error);
+            return [];
         } finally {
             setLoading(false);
         }
     };
 
-    const loadMessages = async (conversationId: string, offset = 0) => {
+    const loadMessages = async (conversationId: string, offset = 0, shouldScroll = true) => {
         try {
             const data = await ChatService.getMessages(conversationId, 50, offset);
 
             if (offset === 0) {
                 setMessages(data);
-                scrollToBottom();
+                if (shouldScroll) {
+                    scrollToBottom();
+                }
             } else {
                 setMessages(prev => [...data, ...prev]);
             }

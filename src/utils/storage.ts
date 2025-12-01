@@ -32,6 +32,8 @@ export interface StoredProperty {
   status: 'published' | 'draft' | 'archived';
   createdAt: string;
   ownership_verified?: boolean;
+  listerName?: string;
+  listerRole?: string;
 }
 
 export interface Inquiry {
@@ -73,7 +75,7 @@ export const storage = {
   getProperty: async (id: string): Promise<StoredProperty | null> => {
     const { data, error } = await supabase
       .from('properties')
-      .select('*')
+      .select('*, users:user_id(name, role)')
       .eq('id', id)
       .single();
 
@@ -347,6 +349,15 @@ export const storage = {
 
     if (error) return [];
     return (data || []).map(mapPropertyFromDB);
+  },
+
+  // Newsletter
+  addNewsletterSubscriber: async (email: string) => {
+    const { error } = await supabase
+      .from('newsletter_subscribers')
+      .insert([{ email }]);
+
+    if (error) throw error;
   }
 
 };
@@ -371,7 +382,9 @@ function mapPropertyFromDB(dbProp: any): StoredProperty {
     images: dbProp.images || [],
     status: dbProp.status,
     createdAt: dbProp.created_at,
-    ownership_verified: dbProp.ownership_verified
+    ownership_verified: dbProp.ownership_verified,
+    listerName: dbProp.users?.name,
+    listerRole: dbProp.users?.role
   };
 }
 

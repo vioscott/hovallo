@@ -26,6 +26,7 @@ import { EditListingPage } from './pages/EditListingPage';
 import { MortgagePage } from './pages/MortgagePage';
 import { SupabaseTestPage } from './pages/SupabaseTestPage';
 import { VerificationPage } from './pages/VerificationPage';
+import { SelectRolePage } from './pages/SelectRolePage';
 
 
 

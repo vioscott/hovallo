@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { HomeIcon, UsersIcon, TargetIcon, HeartIcon } from 'lucide-react';
+import introVid from '../vid/intro-vid.mp4';
 
 export function AboutPage() {
     return (
@@ -29,6 +30,25 @@ export function AboutPage() {
                             agents, and property seekers directly, eliminating unnecessary middlemen
                             and making the process more efficient.
                         </p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Intro Video Section */}
+            <div className="py-16 bg-gray-50">
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="rounded-2xl overflow-hidden shadow-xl">
+                        <video
+                            className="w-full h-auto"
+                            controls
+
+                            muted
+                            loop
+                            playsInline
+                        >
+                            <source src={introVid} type="video/mp4" />
+                            Your browser does not support the video tag.
+                        </video>
                     </div>
                 </div>
             </div>

@@ -20,8 +20,19 @@ export function AuthCallbackPage() {
                     // Ensure user profile exists
                     await fetchUserProfile(session.user.id, session.user.email!);
 
-                    // Redirect to dashboard
-                    navigate('/dashboard');
+                    // Fetch user role to determine redirect
+                    const { data: userData } = await supabase
+                        .from('users')
+                        .select('role')
+                        .eq('id', session.user.id)
+                        .single();
+
+                    // Redirect based on role
+                    if (userData?.role === 'admin') {
+                        navigate('/admin');
+                    } else {
+                        navigate('/dashboard');
+                    }
                 } else {
                     // If no session found, check if we have an error in URL
                     const params = new URLSearchParams(window.location.search);
